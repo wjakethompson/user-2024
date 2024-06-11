@@ -1,0 +1,29 @@
+.reveal .slide-background-content {
+  background-image: url("figure/backgrounds/ku-title.png");
+  background-size: contain;
+}
+
+.reveal .level2 .slide-background-content {
+  background-image: url("figure/backgrounds/default.png");
+  background-size: contain;
+}
+
+.reveal .title-slide .slide-background-content {
+  background-image: url("figure/backgrounds/section.png");
+  background-size: contain;
+}
+
+.reveal .exercise .slide-background-content {
+  background-image: url("figure/backgrounds/exercises.png");
+  background-size: contain;
+}
+
+.reveal .closing .slide-background-content {
+  background-image: url("figure/backgrounds/plain-title.png");
+  background-size: contain;
+}
+
+.reveal .empty .slide-background-content {
+  background-image: url("figure/backgrounds/empty.png");
+  background-size: contain;
+}

@@ -1,0 +1,176 @@
+---
+title: Applied diagnostic <br/> classification modeling
+subtitle: Using the R package measr
+author: W. Jake Thompson, Ph.D.
+format:
+  measr-slides-revealjs:
+    progress: false
+knitr:
+  opts_chunk: 
+    comment: "#>"
+    fig.width: 7
+    fig.asp: 0.618
+    fig.align: "center"
+code-link: true
+preload-iframes: true
+code-annotations: select
+filters:
+  - lua/output-line-highlight.lua
+---
+
+# Section title
+
+```{r setup}
+library(tidyverse)
+library(countdown)
+library(ggmeasr)
+library(knitr)
+library(measr)
+library(here)
+
+set_theme(plot_margin = margin(5, 0, 0, 0))
+```
+
+## Default Slide
+
+Here is some **bold** and *italic* text.
+
+* Bullets
+  * And sub-bullets
+* Another bullet
+
+## Columns
+
+:::columns
+:::{.column width="45%"}
+### Left column
+
+- Point 1
+- Point 2
+- Point 3
+:::
+
+:::{.column width="45%"}
+### Right column
+
+- Point 4
+- Point 5
+- Point 6
+:::
+:::
+
+
+## Code
+
+```{r}
+#| echo: TRUE
+#| output-location: column
+library(measr)
+
+create_profiles(5)
+```
+
+## Code annotations
+
+```r
+starwars |>                            # <1>
+  mutate(                              # <2>
+    bmi = mass / ((height / 100) ^ 2), # <2>
+    age_new_hope = birth_year + 4      # <2>
+  )                                    # <2>
+```
+1. Take `starwars`, and then,
+2. add new columns for the BMI and age in "Return of the Jedi"
+
+## Output highlighting
+
+```{r}
+#| class-output: highlight
+#| output-line-numbers: "|3|5,6"
+
+starwars |> 
+  mutate(
+    bmi = mass / ((height / 100) ^ 2),
+    age_new_hope = birth_year + 4
+  )       
+```
+
+
+## Exercise 1 {.exercise}
+
+Here is an exercise.
+
+```{r countdown-1}
+countdown(
+  minutes = 3, 
+  seconds = 0,
+  right = "1%", bottom = "14%",
+  color_border              = "#023047",
+  color_background          = "#023047",
+  color_text                = "#8ECAE6",
+  color_running_background  = "#023047",
+  color_running_text        = "#8ECAE6",
+  color_finished_background = "#D7263D",
+  color_finished_text       = "#FFFFFF"
+)
+```
+
+## {.empty data-menu-title="Empty background"}
+
+```{r}
+#| label: big-image
+#| out-width: 100%
+#| fig-alt: "A big image."
+
+include_graphics("figure/measr-hex.png")
+```
+
+
+# {.closing data-menu-title="Closing"}
+
+</br>
+
+:::{.end-title color="white" font-size="200%"}
+Presentation Title
+:::
+
+:::{.end-subtitle}
+Presentation Subtitle
+:::
+
+:::{.center}
+<https://measr.info>
+:::
+
+# <https://measr.info> {.thank-you data-menu-title="Get in touch" background-color="#023047" background-iframe="grid-worms/index.html"}
+
+:::{.columns .v-center-container}
+
+:::{.column .image width="60%"}
+
+![](figure/measr-hex.png){width="50%" fig-alt="Hex logo for the measr R package."}
+
+:::
+
+:::{.column width="40%"}
+
+:::{.thank-you-subtitle}
+
+:::{.small}
+
+{{< fa globe >}} \ [wjakethompson.com](https://wjakethompson.com)  
+{{< fa envelope >}} \ [wjakethompson@ku.edu](mailto:wjakethompson@ku.edu)  
+{{< fa brands linkedin >}} \ [in/wjakethompson](https://linkedin.com/in/wjakethompson)  
+{{< fa brands github >}} \ [@wjakethompson](https://github.com/wjakethompson)  
+{{< fa brands mastodon >}} \ [@wjakethompson@fosstodon.org](https://fosstodon.org/@wjakethompson)  
+{{< fa brands bluesky >}} \ [@wjakethompson.com](https://bsky.app/profile/wjakethompson.com)  
+{{< fa brands threads >}} \ [@wjakethompson.com](https://www.threads.net/@wjakethompson)  
+{{< fa brands x-twitter >}} \ [@wjakethompson](https://twitter.com/wjakethompson)  
+
+:::
+
+:::
+
+:::
+
+:::

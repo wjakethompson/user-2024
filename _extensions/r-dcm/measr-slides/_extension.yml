@@ -1,0 +1,16 @@
+title: Applied Diagnostic Modeling With {measr}
+author: W. Jake Thompson
+version: 1.0.0
+quarto-required: ">=1.2.0"
+contributes:
+  format:
+    common:
+      shortcodes:
+        - quarto-ext/fontawesome
+    revealjs:
+      theme: [default, theme.scss]
+      css: [backgrounds.css, lists.css]
+      preview-links: auto
+      width: 1280
+      height: 720
+      highlight-style: a11y-light

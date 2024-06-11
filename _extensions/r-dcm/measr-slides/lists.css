@@ -1,0 +1,9 @@
+.reveal .slides li {
+  list-style-image: url('figure/lists/blue-hex-list.png');
+  padding-left: 10px;
+}
+
+.reveal .slides li li {
+  list-style-image: url('figure/lists/empty-hex-list.png');
+  padding-left: 10px;
+}
