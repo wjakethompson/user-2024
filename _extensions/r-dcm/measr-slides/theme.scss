@@ -123,9 +123,8 @@ $btn-code-copy-color-active: $theme-darkblue;
 }
 
 div.thank-you .slide-background-content {
-  width: 60%;
+  width: 65%;
   height: 70%;
-  position: relative;
   top: 20%;
 }
 
@@ -135,6 +134,20 @@ div.thank-you .slide-background-content {
   
   a {
     color: $theme-lightblue;
+  }
+}
+
+.reveal .slides .thank-you {
+  div.cell {
+    margin-right: 0em;
+  }
+  
+  div.quarto-figure-center {
+    margin-bottom: 0em;
+  }
+  
+  div.column.image {
+    padding-top: 1%;
   }
 }
 
@@ -156,7 +169,7 @@ div.thank-you .slide-background-content {
   display: flex !important;
   justify-content: center;
   align-items: center;
-  height: 90%;
+  height: 100%;
   
   p {
     margin: 0em !important;

@@ -23,7 +23,17 @@
   background-size: contain;
 }
 
+.reveal .empty-white .slide-background-content {
+  background-image: url("figure/backgrounds/empty-white.png");
+  background-size: contain;
+}
+
 .reveal .empty .slide-background-content {
-  background-image: url("figure/backgrounds/empty.png");
+  background-image: none;
+  background-size: contain;
+}
+
+.reveal .thank-you .slide-background-content {
+  background-image: none;
   background-size: contain;
 }

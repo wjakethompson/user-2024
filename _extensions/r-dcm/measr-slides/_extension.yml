@@ -7,6 +7,7 @@ contributes:
     common:
       shortcodes:
         - quarto-ext/fontawesome
+        - mcanouil/iconify
     revealjs:
       theme: [default, theme.scss]
       css: [backgrounds.css, lists.css]
