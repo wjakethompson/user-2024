@@ -1,6 +1,6 @@
 ---
-title: Applied diagnostic <br/> classification modeling
-subtitle: Using the R package measr
+title: Diagnostic Modeling 
+subtitle: For Educational and Psychological Assessment
 author: W. Jake Thompson, Ph.D.
 format:
   measr-slides-revealjs:
@@ -11,6 +11,8 @@ knitr:
     fig.width: 7
     fig.asp: 0.618
     fig.align: "center"
+    R.options:
+      pillar.min_chars: 500
 code-link: true
 preload-iframes: true
 code-annotations: select
@@ -18,156 +20,625 @@ filters:
   - lua/output-line-highlight.lua
 ---
 
-# Section title
+## Who am I?
 
-```{r setup}
+```{r}
+#| label: setup
+#| include: false
+
 library(tidyverse)
-library(countdown)
 library(ggmeasr)
-library(knitr)
 library(measr)
+library(knitr)
 library(here)
+library(ggdist)
+library(magick)
+library(gt)
+library(gtExtras)
 
 set_theme(plot_margin = margin(5, 0, 0, 0))
 ```
 
-## Default Slide
+:::{.columns}
+:::{.column width="50%"}
+W. Jake Thompson, Ph.D.
 
-Here is some **bold** and *italic* text.
+* Assistant Director of Psychometrics
+  * [ATLAS](https://atlas.ku.edu) | University of Kansas
 
-* Bullets
-  * And sub-bullets
-* Another bullet
-
-## Columns
-
-:::columns
-:::{.column width="45%"}
-### Left column
-
-- Point 1
-- Point 2
-- Point 3
+* Research: Applications of diagnostic psychometric models
+  * Lead psychometrician and Co-PI for the [Dynamic Learnings Maps](https://dynamiclearningmaps.org) assessments
+  * PI for an [IES-funded](https://ies.ed.gov/funding/grantsearch/details.asp?ID=4546) project to develop software for diagnostic models
 :::
 
-:::{.column width="45%"}
-### Right column
+:::{.column width="50%"}
+:::{.center}
 
-- Point 4
-- Point 5
-- Point 6
+```{r}
+#| label: profile-picture
+#| out-width: 50%
+
+include_graphics("figure/wjt-2022-hex.png")
+```
+
+:::{.small}
+{{< iconify fa6-brands github >}} &nbsp; [@wjakethompson](https://www.gitub.com/wjakethompson)  
+{{< iconify fa6-solid globe >}} &nbsp; [wjakethompson.com](https://wjakethompson.com)
+:::
+:::
 :::
 :::
 
+## Acknowledgements
 
-## Code
+The research reported here was supported by the Institute of Education Sciences, U.S. Department of Education, through Grant [R305D210045](https://ies.ed.gov/funding/grantsearch/details.asp?ID=4546) to the University of Kansas. The opinions expressed are those of the authors and do not represent the views of the the Institute or the U.S. Department of Education. <br><br>
 
-```{r}
-#| echo: TRUE
-#| output-location: column
-library(measr)
+:::{.columns}
+:::{.column width="15%"}
+:::
 
-create_profiles(5)
-```
-
-## Code annotations
-
-```r
-starwars |>                            # <1>
-  mutate(                              # <2>
-    bmi = mass / ((height / 100) ^ 2), # <2>
-    age_new_hope = birth_year + 4      # <2>
-  )                                    # <2>
-```
-1. Take `starwars`, and then,
-2. add new columns for the BMI and age in "Return of the Jedi"
-
-## Output highlighting
+:::{.column width="70%"}
 
 ```{r}
-#| class-output: highlight
-#| output-line-numbers: "|3|5,6"
-
-starwars |> 
-  mutate(
-    bmi = mass / ((height / 100) ^ 2),
-    age_new_hope = birth_year + 4
-  )       
-```
-
-
-## Exercise 1 {.exercise}
-
-Here is an exercise.
-
-```{r countdown-1}
-countdown(
-  minutes = 3, 
-  seconds = 0,
-  right = "1%", bottom = "14%",
-  color_border              = "#023047",
-  color_background          = "#023047",
-  color_text                = "#8ECAE6",
-  color_running_background  = "#023047",
-  color_running_text        = "#8ECAE6",
-  color_finished_background = "#D7263D",
-  color_finished_text       = "#FFFFFF"
-)
-```
-
-## {.empty data-menu-title="Empty background"}
-
-```{r}
-#| label: big-image
+#| label: ies-logo
 #| out-width: 100%
-#| fig-alt: "A big image."
+#| fig-align: center
+#| fig-alt: |
+#|   Logo for the Institute of Education Sciences
+
+include_graphics("figure/IES_InstituteOfEducationSciences_RGB.png")
+```
+
+:::
+
+:::{.column width="15%"}
+:::
+:::
+
+
+# Diagnostic assessments
+
+## What is an assessment?
+
+* Social sciences are often interested in latent variables
+  * Math knowledge
+  * Psychopathology
+  * Personality traits
+
+:::{.fragment}
+
+* Assessments are designed to measure the unmeasurable
+  * Educational assessment
+  * Psychological screening tools
+  * Personality questionnaires
+
+:::
+
+:::{.fragment}
+
+* Today's example: A test on musical knowledge
+
+:::
+
+## {.empty background-color="#FFFFFF" data-menu-title="Our Example"}
+
+```{r all-taylor}
+#| label: all-taylor
+#| out-width: 100%
+#| fit-alt: "Artistic renderings of Taylor Swift from all 15 album releases."
+
+include_graphics(here("figure", "taylor", "all-taylor.png"))
+```
+
+## {data-menu-title="Classic psychometrics"}
+
+:::{.columns}
+:::{.column width="20%"}
+* Traditional assessments and psychometric models measure an overall skill or ability
+* Assume a continuous latent trait
+:::
+
+:::{.column width="80%"}
+```{r}
+#| label: taylor-continuum
+#| out-width: 100%
+#| out-height: 90%
+#| fig-alt: "A normal distribution with images of Taylor Swift from each era overlayed."
+
+taylors <- read_rds(here("data", "taylor-results.rds")) |> 
+  mutate(x = theta, y = 0.02,
+         img = here("figure", "taylor", "eras", img))
+
+base <- prior(normal(0, 1), class = "intercept") |> 
+  parse_dist(prior_def) |> 
+  ggplot(aes(xdist = .dist_obj)) +
+  stat_slab(color = palette_measr[1], fill = palette_measr[3])
+
+width <- 0.6
+for (i in 1:nrow(taylors)) {
+  img <- as.raster(image_read(taylors$img[i]))
+  
+  base <- base +
+    annotation_raster(img,
+                      taylors$x[i] - (width / 2),
+                      taylors$x[i] + (width / 2),
+                      taylors$y[i], taylors$y[i] + 0.25)
+}
+
+base +
+  labs(x = "Musical Knowledge", y = NULL) +
+  theme(axis.text.y = element_blank(),
+        axis.title.y = element_blank())
+```
+:::
+:::
+
+## Traditional measurement
+
+* The output is a weak ordering of eras due to error in estimates
+  * Confident *Taylor Swift* (debut) is the worst
+  * Not confident on ordering toward the middle of the distribution
+
+* Limited in the types of questions that can be answered. 
+  * Why is *Taylor Swift* (debut) so low?
+  * What aspects do each era demonstrate proficiency or competency of?
+  * How much skill is "enough" to be competent?
+  
+## Diagnostic measurement
+
+* Designed to be multidimensional
+* No continuum of student achievement
+* Categorical constructs
+  * Usually binary (e.g., master/nonmaster, proficient/not proficient)
+
+* Several different names in the literature
+  * Diagnostic classification models (DCMs)
+  * Cognitive diagnostic models (CDMs)
+  * Skills assessment models
+  * Latent response models
+  * Restricted latent class models
+
+## Diagnostic music assessment
+
+:::{.columns}
+
+:::{.column width="30%"}
+* Rather than measuring overall musical knowledge, we can break music down into set of skills or *attributes*
+  * Songwriting
+  * Production
+  * Vocals
+:::
+
+:::{.column width="70%"}
+```{r skills-diagram}
+#| label: music-attributes
+#| fig-asp: 0.3
+#| out-width: 80%
+#| out-height: 40%
+#| fig-alt: "Three circles representing the 3 attributes. The bottom half of each circle is shaded dark, and the top half is light, to indicate there are two categories for each attribute."
+
+library(ggforce)
+
+tibble(start = rep(c(-pi / 2, pi / 2), 3),
+       type = rep(c("Proficient", "Non-proficient"), 3),
+       skill = rep(c("Songwriting", "Production", "Vocals"),
+                   each = 2),
+       x = rep(c(3, 6, 9), each = 2),
+       y = 0) |> 
+  ggplot() +
+  geom_arc_bar(aes(x0 = x, y0 = y, r0 = 0, r = 1.2, start = start,
+                   end = start + pi, fill = type), color = "white",
+               show.legend = FALSE, radius = 0) +
+  geom_text(data = ~slice(., c(1, 3, 5, 7)),
+            aes(x = x, y = 0.2, label = skill), size = 5) +
+  scale_fill_manual(values = c("Proficient" = palette_measr[3],
+                               "Non-proficient" = palette_measr[1])) +
+  coord_equal() +
+  theme_void()
+```
+
+:::
+:::
+
+* Attributes are categorical, often dichotomous (e.g., proficient vs. non-proficient)
+
+## DCMs in practice
+
+:::{.columns}
+:::{.column width="50%"}
+
+### Benefits
+
+* Fine-grained, multidimensional results allow us to answer more questions
+  * Why is *Taylor Swift* (debut) so low?
+  * What aspects of musical knowledge had demonstrated proficiency in each era?
+* Incorporates complex item structures
+* High reliability with fewer items
+
+:::
+
+:::{.column width="50%"}
+
+:::{.fragment}
+### Applications
+
+* Not often used for practical applications
+* Software constraints
+  * Only estimate restrictive DCMs
+  * Limited functionality for model evaluation
+
+:::
+
+:::
+:::
+
+# {.empty data-menu-title="measr" background-color="#023047" background-iframe="grid-worms/index.html"}
+
+```{r}
+#| label: measr-hex
+#| out-width: 100%
+#| fig-alt: "Hex logo for the measr R package."
 
 include_graphics("figure/measr-hex.png")
 ```
 
+## {.empty data-menu-title="Stan + measr" background-color="#FFFFFF"}
 
-# {.closing data-menu-title="Closing"}
+```{r}
+#| label: stan-measr
+#| out-width: 100%
+#| fig-alt: "Stan logo and measr hex logo."
 
-</br>
+include_graphics("figure/combined-logos.png")
+```
 
-:::{.end-title color="white" font-size="200%"}
-Presentation Title
+## Data requirements
+
+:::{.panel-tabset}
+
+### Data
+
+```{r}
+#| label: taylor-data
+#| echo: true
+#| class-output: short
+#| attr-output: 'style="max-height: 375px;"'
+
+taylor_data <- read_rds(here("data", "taylor-data.rds"))
+taylor_data
+```
+
+### Q-matrix
+
+```{r}
+#| label: taylor-qmatrix
+#| echo: true
+#| class-output: short
+#| attr-output: 'style="max-height: 375px;"'
+
+taylor_qmatrix <- read_rds(here("data", "taylor-qmatrix.rds"))
+taylor_qmatrix
+```
+
 :::
 
-:::{.end-subtitle}
-Presentation Subtitle
+## Model estimation
+
+```{r}
+#| label: taylor-lcdm
+#| echo: true
+
+taylor_lcdm <- measr_dcm(
+  data = taylor_data, qmatrix = taylor_qmatrix, # <1>
+  resp_id = "album",                            # <1>
+  type = "lcdm",                                # <2>
+  method = "mcmc", backend = "rstan",           # <3>
+  warmup = 1000, iter = 1500,                   # <4>
+  chains = 2, cores = 2,                        # <4>
+  file = here("fits", "taylor-lcdm")            # <5>
+)
+```
+1. Specify your data, Q-matrix, and ID columns
+2. Choose the DCM to estimate (e.g., LCDM, DINA, etc.)
+3. Choose the estimation engine
+4. Pass additional arguments to rstan or cmdstanr
+5. Save the model to save time in the future
+
+## Respondent probabilities
+
+```{r}
+#| label: taylor-probs
+#| echo: true
+#| class-output: short
+#| attr-output: 'style="max-height: 500px;"'
+
+predict(taylor_lcdm, probs = c(0.055, 0.945))
+```
+
+## Probabilities to profiles
+
+:::{.columns}
+
+:::{.column width="70%"}
+
+```{r all-profiles}
+taylor_profiles <- taylors |> 
+  mutate(across(c(songwriting, production, vocals),
+                \(x) case_when(x == 1 ~ "check", x == 0 ~ "xmark"))) |> 
+  mutate(s_color = case_when(songwriting == "xmark" ~ palette_measr[2],
+                             songwriting == "check" ~ palette_measr[4]),
+         p_color = case_when(production == "xmark" ~ palette_measr[2],
+                             production == "check" ~ palette_measr[4]),
+         v_color = case_when(vocals == "xmark" ~ palette_measr[2],
+                             vocals == "check" ~ palette_measr[4])) |> 
+  select(era, album_release, img, songwriting, production, vocals,
+         ends_with("_color"))
+
+taylor_profiles |> 
+  arrange(album_release) |> 
+  select(img, songwriting, production, vocals,
+         ends_with("_color")) |>
+  gt() |> 
+  cols_hide(ends_with("_color")) |> 
+  cols_label(img = "") |>
+  # cols_width(img ~ px(100),
+  #            everything() ~ px(150)) |>
+  gt_img_rows(columns = img, img_source = "local", height = 75) |>
+  fmt_icon(songwriting, fill_color = from_column("s_color"), height = "40px") |> 
+  fmt_icon(production, fill_color = from_column("p_color"), height = "40px") |> 
+  fmt_icon(vocals, fill_color = from_column("v_color"), height = "40px") |> 
+  cols_align("center", -img) |> 
+  gt_theme_measr() |> 
+  tab_options(table.font.size = 18,
+              container.height = px(500),
+              container.overflow.y = TRUE)
+```
+
 :::
 
-:::{.center}
-<https://measr.info>
+:::{.column width="30%"}
+
+* No scale, no overall "ability"
+* Feedback on specific skills as defined by the cognitive theory and test design
+
 :::
 
-# <https://measr.info> {.thank-you data-menu-title="Get in touch" background-color="#023047" background-iframe="grid-worms/index.html"}
+:::
+
+## Fine-grained feedback
+
+* Distinguish between respondents who may have similar scale scores
+
+:::{.columns}
+:::{.column width="50%"}
+```{r}
+#| label: mid-profiles
+
+taylor_profiles |> 
+  semi_join(taylors |> 
+              filter(between(theta, -0.5, 0.5)),
+            join_by(era)) |> 
+  select(img, songwriting, production, vocals,
+         ends_with("_color")) |>
+  gt() |> 
+  cols_hide(ends_with("_color")) |> 
+  cols_label(img = "") |>
+  # cols_width(img ~ px(100),
+  #            everything() ~ px(150)) |>
+  gt_img_rows(columns = img, img_source = "local", height = 75) |>
+  fmt_icon(songwriting, fill_color = from_column("s_color"), height = "40px") |> 
+  fmt_icon(production, fill_color = from_column("p_color"), height = "40px") |> 
+  fmt_icon(vocals, fill_color = from_column("v_color"), height = "40px") |> 
+  cols_align("center", -img) |> 
+  gt_theme_measr() |> 
+  tab_options(table.font.size = 18,
+              container.height = px(400),
+              container.overflow.y = TRUE)
+```
+:::
+
+:::{.column width="50%"}
+```{r}
+#| label: mid-scale
+
+table_taylors <- taylors |> 
+  filter(between(theta, -0.5, 0.5))
+
+prior(normal(0, 1), class = "intercept") |> 
+  parse_dist(prior_def) |> 
+  ggplot(aes(xdist = .dist_obj)) +
+  stat_slab(color = palette_measr[1], fill = palette_measr[3]) -> base
+
+width <- 0.6
+for (i in 1:nrow(table_taylors)) {
+  img <- as.raster(image_read(table_taylors$img[i]))
+  
+  base <- base +
+    annotation_raster(img,
+                      table_taylors$x[i] - (width / 2),
+                      table_taylors$x[i] + (width / 2),
+                      table_taylors$y[i], table_taylors$y[i] + 0.25)
+}
+
+base +
+  labs(x = "Musical Knowledge", y = NULL) +
+  theme(axis.text.y = element_blank(),
+        axis.title.y = element_blank())
+```
+
+:::
+:::
+
+## Model evaluation
+
+:::{.panel-tabset}
+
+### Model fit
+
+```{r}
+#| label: m2
+#| echo: true
+
+taylor_lcdm <- add_fit(taylor_lcdm, method = "m2")
+measr_extract(taylor_lcdm, "m2")
+```
+<br>
+```{r}
+#| label: rmsea
+#| echo: true
+
+measr_extract(taylor_lcdm, "rmsea")
+```
+
+### Classification reliability
+
+```{r}
+#| label: reliability
+#| echo: true
+
+taylor_lcdm <- add_reliability(taylor_lcdm)
+measr_extract(taylor_lcdm, "classification_reliability")
+```
+
+:::
+
+## When are DCMs appropriate?
+
+Success depends on:
+
+1. Domain definitions
+    * What are the attributes we're trying to measure?
+    * Are the attributes measurable (e.g., with assessment items)?
+  
+2. Alignment of purpose between assessment and model
+    * Is classification the purpose?
+
+## When are DCMs not appropriate?
+
+* When the goal is the ordering of individuals on a scale
+
+* DCMs do not distinguish within classes
+
+:::{.columns}
+:::{.column width="50%"}
+<br>
+```{r red-profiles}
+taylor_profiles |> 
+  filter(str_detect(era, "Red")) |> 
+  select(img, songwriting, production, vocals,
+         ends_with("_color")) |>
+  gt() |> 
+  cols_hide(ends_with("_color")) |> 
+  cols_label(img = "") |>
+  # cols_width(img ~ px(100),
+  #            everything() ~ px(150)) |>
+  gt_img_rows(columns = img, img_source = "local", height = 75) |>
+  fmt_icon(songwriting, fill_color = from_column("s_color"), height = "40px") |> 
+  fmt_icon(production, fill_color = from_column("p_color"), height = "40px") |> 
+  fmt_icon(vocals, fill_color = from_column("v_color"), height = "40px") |> 
+  cols_align("center", -img) |> 
+  gt_theme_measr() |> 
+  tab_options(table.font.size = 18)
+```
+:::
+
+:::{.column width="50%"}
+```{r red-scale}
+table_taylors <- taylors |> 
+  filter(str_detect(era, "Red"))
+
+prior(normal(0, 1), class = "intercept") |> 
+  parse_dist(prior_def) |> 
+  ggplot(aes(xdist = .dist_obj)) +
+  stat_slab(color = palette_measr[1], fill = palette_measr[3]) -> base
+
+width <- 0.6
+for (i in 1:nrow(table_taylors)) {
+  img <- as.raster(image_read(table_taylors$img[i]))
+  
+  base <- base +
+    annotation_raster(img,
+                      table_taylors$x[i] - (width / 2),
+                      table_taylors$x[i] + (width / 2),
+                      table_taylors$y[i], table_taylors$y[i] + 0.25)
+}
+
+base +
+  labs(x = "Musical Knowledge", y = NULL) +
+  theme(axis.text.y = element_blank(),
+        axis.title.y = element_blank())
+```
+:::
+:::
+
+## Learn more about DCMs
+
+:::{.columns .center}
+
+:::{.column width="50%"}
+[![](figure/rupp-book.jpg){fig-alt="Cover of Diagnostic Measurement book by Rupp, Templin, and Henson." height="13em"}](https://www.amazon.com/Diagnostic-Measurement-Applications-Methodology-Sciences/dp/1606235273)
+:::
+
+:::{.column width="50%"}
+[![](figure/dcm-handbook.jpeg){fig-alt="Cover of the Handbook of Diagnostic Classification Models by von Davier and Lee." height="13em"}](https://link.springer.com/book/10.1007/978-3-030-05584-4)
+:::
+
+:::
+
+## Learn more about measr
+
+:::{.columns .v-center-container-slide}
+
+:::{.column .center}
+```{r}
+#| label: measr-hex
+#| out-width: 60%
+```
+:::
+
+:::{.column}
+
+:::{.large .spaced}
+{{< fa globe >}} [measr documentation](https://measr.info)
+
+{{< fa brands github >}} [wjakethompson/measr](https://github.com/wjakethompson/measr)
+:::
+
+:::
+
+:::
+
+# Thank you! {.thank-you data-menu-title="Get in touch" background-color="#023047"}
+
+<br>
 
 :::{.columns .v-center-container}
 
-:::{.column .image width="60%"}
+:::{.column .image width="55%"}
 
-![](figure/measr-hex.png){width="50%" fig-alt="Hex logo for the measr R package."}
+:::{.center}
+Slides
+:::
+
+```{r}
+#| label: measr-hex
+#| out-width: 50%
+```
 
 :::
 
-:::{.column width="40%"}
+:::{.column width="45%"}
 
 :::{.thank-you-subtitle}
 
-:::{.small}
-
-{{< fa globe >}} \ [wjakethompson.com](https://wjakethompson.com)  
-{{< fa envelope >}} \ [wjakethompson@ku.edu](mailto:wjakethompson@ku.edu)  
-{{< fa brands linkedin >}} \ [in/wjakethompson](https://linkedin.com/in/wjakethompson)  
-{{< fa brands github >}} \ [@wjakethompson](https://github.com/wjakethompson)  
-{{< fa brands mastodon >}} \ [@wjakethompson@fosstodon.org](https://fosstodon.org/@wjakethompson)  
-{{< fa brands bluesky >}} \ [@wjakethompson.com](https://bsky.app/profile/wjakethompson.com)  
-{{< fa brands threads >}} \ [@wjakethompson.com](https://www.threads.net/@wjakethompson)  
-{{< fa brands x-twitter >}} \ [@wjakethompson](https://twitter.com/wjakethompson)  
-
-:::
+{{< iconify fa6-solid globe >}} \ [wjakethompson.com](https://wjakethompson.com)  
+{{< iconify fa6-solid envelope >}} \ [wjakethompson@ku.edu](mailto:wjakethompson@ku.edu)  
+{{< iconify fa6-brands bluesky >}} \ [@wjakethompson.com](https://bsky.app/profile/wjakethompson.com)  
+{{< iconify fa6-brands github >}} \ [@wjakethompson](https://github.com/wjakethompson)  
+{{< iconify fa6-brands linkedin >}} \ [in/wjakethompson](https://linkedin.com/in/wjakethompson)  
+{{< iconify fa6-brands mastodon >}} \ [@wjakethompson@fosstodon.org](https://fosstodon.org/@wjakethompson)  
+{{< iconify fa6-brands threads >}} \ [@wjakethompson](https://www.threads.net/@wjakethompson)  
+{{< iconify fa6-brands x-twitter >}} \ [@wjakethompson](https://twitter.com/wjakethompson)  
 
 :::
 

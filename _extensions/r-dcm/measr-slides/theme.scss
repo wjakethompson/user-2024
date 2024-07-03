@@ -277,3 +277,15 @@ div.thank-you .slide-background-content {
   background-color: #EFEFEF;
   color: #333333;
 }
+
+.reveal pre.short code {
+  max-height: inherit;
+}
+
+code a:any-link {
+  color: var(--r-link-color);
+}
+
+.reveal .slides .quarto-figure-center {
+  margin-bottom: 0;
+}
