@@ -57,6 +57,8 @@ W. Jake Thompson, Ph.D.
 ```{r}
 #| label: profile-picture
 #| out-width: 50%
+#| fig-alt: |
+#|   Profile picture for Jake Thompson.
 
 include_graphics("figure/wjt-2022-hex.png")
 ```
@@ -84,7 +86,7 @@ The research reported here was supported by the Institute of Education Sciences,
 #| out-width: 100%
 #| fig-align: center
 #| fig-alt: |
-#|   Logo for the Institute of Education Sciences
+#|   Logo for the Institute of Education Sciences.
 
 include_graphics("figure/IES_InstituteOfEducationSciences_RGB.png")
 ```
@@ -125,7 +127,8 @@ include_graphics("figure/IES_InstituteOfEducationSciences_RGB.png")
 ```{r all-taylor}
 #| label: all-taylor
 #| out-width: 100%
-#| fit-alt: "Artistic renderings of Taylor Swift from all 15 album releases."
+#| fit-alt: |
+#|   Artistic renderings of Taylor Swift from all 15 album releases.
 
 include_graphics(here("figure", "taylor", "all-taylor.png"))
 ```
@@ -143,7 +146,8 @@ include_graphics(here("figure", "taylor", "all-taylor.png"))
 #| label: taylor-continuum
 #| out-width: 100%
 #| out-height: 90%
-#| fig-alt: "A normal distribution with images of Taylor Swift from each era overlayed."
+#| fig-alt: |
+#|   A normal distribution with images of Taylor Swift from each era overlayed.
 
 taylors <- read_rds(here("data", "taylor-results.rds")) |> 
   mutate(x = theta, y = 0.02,
@@ -215,7 +219,10 @@ base +
 #| fig-asp: 0.3
 #| out-width: 80%
 #| out-height: 40%
-#| fig-alt: "Three circles representing the 3 attributes. The bottom half of each circle is shaded dark, and the top half is light, to indicate there are two categories for each attribute."
+#| fig-alt: |
+#|   Three circles representing the 3 attributes. The bottom half of each circle
+#|   is shaded dark, and the top half is light, to indicate there are two
+#|   categories for each attribute.
 
 library(ggforce)
 
@@ -277,7 +284,8 @@ tibble(start = rep(c(-pi / 2, pi / 2), 3),
 ```{r}
 #| label: measr-hex
 #| out-width: 100%
-#| fig-alt: "Hex logo for the measr R package."
+#| fig-alt: |
+#|   Hex logo for the measr R package.
 
 include_graphics("figure/measr-hex.png")
 ```
@@ -287,7 +295,8 @@ include_graphics("figure/measr-hex.png")
 ```{r}
 #| label: stan-measr
 #| out-width: 100%
-#| fig-alt: "Stan logo and measr hex logo."
+#| fig-alt: |
+#|   Stan logo and measr hex logo.
 
 include_graphics("figure/combined-logos.png")
 ```
@@ -371,23 +380,32 @@ taylor_profiles <- taylors |>
                              production == "check" ~ palette_measr[4]),
          v_color = case_when(vocals == "xmark" ~ palette_measr[2],
                              vocals == "check" ~ palette_measr[4])) |> 
-  select(era, album_release, img, songwriting, production, vocals,
+  select(album, era, album_release, img, songwriting, production, vocals,
          ends_with("_color"))
 
 taylor_profiles |> 
   arrange(album_release) |> 
-  select(img, songwriting, production, vocals,
-         ends_with("_color")) |>
+  select(album, img, songwriting, production, vocals,
+         ends_with("_color")) |> 
+  separate_wider_regex(album, patterns = c(album = ".*", " \\(",
+                                           tv = ".*", "\\)"),
+                       too_few = "align_start") |> 
+  mutate(tv = replace_na(tv, ""),
+         album = case_when(album == "THE TORTURED POETS DEPARTMENT" ~
+                             "**THE TORTURED POETS<br>DEPARTMENT**",
+                           .default = paste0("**", album, "**"))) |>
   gt() |> 
   cols_hide(ends_with("_color")) |> 
   cols_label(img = "") |>
-  # cols_width(img ~ px(100),
-  #            everything() ~ px(150)) |>
+  cols_width(img ~ px(100)) |> 
+  fmt_markdown(columns = album) |> 
+  gt_merge_stack(col1 = album, col2 = tv, small_cap = FALSE,
+                 palette = c("black", "grey40")) |> 
   gt_img_rows(columns = img, img_source = "local", height = 75) |>
   fmt_icon(songwriting, fill_color = from_column("s_color"), height = "40px") |> 
   fmt_icon(production, fill_color = from_column("p_color"), height = "40px") |> 
   fmt_icon(vocals, fill_color = from_column("v_color"), height = "40px") |> 
-  cols_align("center", -img) |> 
+  cols_align("center") |> 
   gt_theme_measr() |> 
   tab_options(table.font.size = 18,
               container.height = px(500),
@@ -418,18 +436,27 @@ taylor_profiles |>
   semi_join(taylors |> 
               filter(between(theta, -0.5, 0.5)),
             join_by(era)) |> 
-  select(img, songwriting, production, vocals,
+  select(album, img, songwriting, production, vocals,
          ends_with("_color")) |>
+  separate_wider_regex(album, patterns = c(album = ".*", " \\(",
+                                           tv = ".*", "\\)"),
+                       too_few = "align_start") |> 
+  mutate(tv = replace_na(tv, ""),
+         album = case_when(album == "THE TORTURED POETS DEPARTMENT" ~
+                             "**THE TORTURED POETS<br>DEPARTMENT**",
+                           .default = paste0("**", album, "**"))) |>
   gt() |> 
   cols_hide(ends_with("_color")) |> 
   cols_label(img = "") |>
-  # cols_width(img ~ px(100),
-  #            everything() ~ px(150)) |>
+  cols_width(img ~ px(100)) |> 
+  fmt_markdown(columns = album) |> 
+  gt_merge_stack(col1 = album, col2 = tv, small_cap = FALSE,
+                 palette = c("black", "grey40")) |> 
   gt_img_rows(columns = img, img_source = "local", height = 75) |>
   fmt_icon(songwriting, fill_color = from_column("s_color"), height = "40px") |> 
   fmt_icon(production, fill_color = from_column("p_color"), height = "40px") |> 
   fmt_icon(vocals, fill_color = from_column("v_color"), height = "40px") |> 
-  cols_align("center", -img) |> 
+  cols_align("center") |> 
   gt_theme_measr() |> 
   tab_options(table.font.size = 18,
               container.height = px(400),
@@ -440,6 +467,8 @@ taylor_profiles |>
 :::{.column width="50%"}
 ```{r}
 #| label: mid-scale
+#| fig-alt: |
+#|   A normal distribution with images of Taylor Swift near the mean.
 
 table_taylors <- taylors |> 
   filter(between(theta, -0.5, 0.5))
@@ -465,7 +494,6 @@ base +
   theme(axis.text.y = element_blank(),
         axis.title.y = element_blank())
 ```
-
 :::
 :::
 
@@ -522,21 +550,32 @@ Success depends on:
 :::{.columns}
 :::{.column width="50%"}
 <br>
-```{r red-profiles}
+```{r}
+#| label: red-profiles
+
 taylor_profiles |> 
   filter(str_detect(era, "Red")) |> 
-  select(img, songwriting, production, vocals,
+  select(album, img, songwriting, production, vocals,
          ends_with("_color")) |>
+  separate_wider_regex(album, patterns = c(album = ".*", " \\(",
+                                           tv = ".*", "\\)"),
+                       too_few = "align_start") |> 
+  mutate(tv = replace_na(tv, ""),
+         album = case_when(album == "THE TORTURED POETS DEPARTMENT" ~
+                             "**THE TORTURED POETS<br>DEPARTMENT**",
+                           .default = paste0("**", album, "**"))) |>
   gt() |> 
   cols_hide(ends_with("_color")) |> 
   cols_label(img = "") |>
-  # cols_width(img ~ px(100),
-  #            everything() ~ px(150)) |>
+  cols_width(img ~ px(100)) |> 
+  fmt_markdown(columns = album) |> 
+  gt_merge_stack(col1 = album, col2 = tv, small_cap = FALSE,
+                 palette = c("black", "grey40")) |> 
   gt_img_rows(columns = img, img_source = "local", height = 75) |>
   fmt_icon(songwriting, fill_color = from_column("s_color"), height = "40px") |> 
   fmt_icon(production, fill_color = from_column("p_color"), height = "40px") |> 
   fmt_icon(vocals, fill_color = from_column("v_color"), height = "40px") |> 
-  cols_align("center", -img) |> 
+  cols_align("center") |> 
   gt_theme_measr() |> 
   tab_options(table.font.size = 18)
 ```
@@ -544,6 +583,10 @@ taylor_profiles |>
 
 :::{.column width="50%"}
 ```{r red-scale}
+#| label: red-scale
+#| fig-alt: |
+#|   Normal distribution with two images Taylor Swift far apart.
+
 table_taylors <- taylors |> 
   filter(str_detect(era, "Red"))
 
@@ -593,6 +636,8 @@ base +
 ```{r}
 #| label: measr-hex
 #| out-width: 60%
+#| fig-alt: |
+#|   Hex logo for the measr R package.
 ```
 :::
 
@@ -612,7 +657,7 @@ base +
 
 <br>
 
-:::{.columns .v-center-container}
+:::{.columns}
 
 :::{.column .image width="55%"}
 
@@ -621,8 +666,12 @@ Slides
 :::
 
 ```{r}
-#| label: measr-hex
+#| label: qr-code
 #| out-width: 50%
+#| fig-alt: |
+#|   QR code linking to https://github.com/wjakethompson/user-2024.
+
+include_graphics(here("figure", "qr-code.png"))
 ```
 
 :::
